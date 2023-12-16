@@ -1,0 +1,4 @@
+[submodule "cpython"]
+	path = cpython
+	url = git@github.com:python/cpython.git
+	branch = main
