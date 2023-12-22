@@ -1,5 +1,5 @@
 import functools
-import io
+from . import _io as io
 ntpath = object()
 from . import _posixpath as posixpath
 import sys
@@ -41,7 +41,7 @@ def _ignore_error(exception):
             getattr(exception, 'winerror', None) in _IGNORED_WINERRORS)
 
 
-@functools.cache
+@functools.lru_cache(maxsize=256)
 def _is_case_sensitive(pathmod):
     return pathmod.normcase('Aa') == 'Aa'
 
