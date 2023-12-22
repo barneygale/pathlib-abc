@@ -1,7 +1,7 @@
 import functools
 import io
-import ntpath
-import posixpath
+ntpath = object()
+from . import _posixpath as posixpath
 import sys
 import warnings
 from _collections_abc import Sequence
@@ -58,13 +58,14 @@ def _compile_pattern(pat, sep, case_sensitive):
     sensitivity)."""
     global re, glob
     if re is None:
-        import re, glob
+        import re
+        from . import _glob as glob
 
-    flags = re.NOFLAG if case_sensitive else re.IGNORECASE
+    flags = 0 if case_sensitive else re.IGNORECASE
     regex = glob.translate(pat, recursive=True, include_hidden=True, seps=sep)
     # The string representation of an empty path is a single dot ('.'). Empty
     # paths shouldn't match wildcards, so we consume it with an atomic group.
-    regex = r'(\.\Z)?+' + regex
+    regex = r'(?=(?P<empty>\.\Z|))(?P=empty)' + regex
     return re.compile(regex, flags=flags).match
 
 
@@ -396,9 +397,8 @@ class PurePathBase:
         if _deprecated:
             msg = ("support for supplying more than one positional argument "
                    "to pathlib.PurePath.relative_to() is deprecated and "
-                   "scheduled for removal in Python {remove}")
-            warnings._deprecated("pathlib.PurePath.relative_to(*args)", msg,
-                                 remove=(3, 14))
+                   "scheduled for removal in Python 3.14")
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
             other = self.with_segments(other, *_deprecated)
         elif not isinstance(other, PurePathBase):
             other = self.with_segments(other)
@@ -420,9 +420,8 @@ class PurePathBase:
         if _deprecated:
             msg = ("support for supplying more than one argument to "
                    "pathlib.PurePath.is_relative_to() is deprecated and "
-                   "scheduled for removal in Python {remove}")
-            warnings._deprecated("pathlib.PurePath.is_relative_to(*args)",
-                                 msg, remove=(3, 14))
+                   "scheduled for removal in Python 3.14")
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
             other = self.with_segments(other, *_deprecated)
         elif not isinstance(other, PurePathBase):
             other = self.with_segments(other)
