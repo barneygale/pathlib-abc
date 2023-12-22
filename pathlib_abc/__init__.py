@@ -1,15 +1,13 @@
 import functools
 import io
-import os
+import ntpath
+import posixpath
 import sys
 import warnings
 from _collections_abc import Sequence
 from errno import ENOENT, ENOTDIR, EBADF, ELOOP, EINVAL
 from itertools import chain
 from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
-
-from . import _posixpath as posixpath
-from . import _ntpath as ntpath
 
 #
 # Internals
@@ -60,14 +58,13 @@ def _compile_pattern(pat, sep, case_sensitive):
     sensitivity)."""
     global re, glob
     if re is None:
-        import re
-        from . import _glob as glob
+        import re, glob
 
-    flags = 0 if case_sensitive else re.IGNORECASE
+    flags = re.NOFLAG if case_sensitive else re.IGNORECASE
     regex = glob.translate(pat, recursive=True, include_hidden=True, seps=sep)
     # The string representation of an empty path is a single dot ('.'). Empty
     # paths shouldn't match wildcards, so we consume it with an atomic group.
-    #regex = r'(\.\Z)?+' + regex
+    regex = r'(\.\Z)?+' + regex
     return re.compile(regex, flags=flags).match
 
 
@@ -284,9 +281,6 @@ class PurePathBase:
         slashes."""
         return str(self).replace(self.pathmod.sep, '/')
 
-    def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, self.as_posix())
-
     @property
     def drive(self):
         """The drive prefix (letter or UNC path), if any."""
@@ -400,6 +394,11 @@ class PurePathBase:
         the path.
         """
         if _deprecated:
+            msg = ("support for supplying more than one positional argument "
+                   "to pathlib.PurePath.relative_to() is deprecated and "
+                   "scheduled for removal in Python {remove}")
+            warnings._deprecated("pathlib.PurePath.relative_to(*args)", msg,
+                                 remove=(3, 14))
             other = self.with_segments(other, *_deprecated)
         elif not isinstance(other, PurePathBase):
             other = self.with_segments(other)
@@ -419,6 +418,11 @@ class PurePathBase:
         """Return True if the path is relative to another path or False.
         """
         if _deprecated:
+            msg = ("support for supplying more than one argument to "
+                   "pathlib.PurePath.is_relative_to() is deprecated and "
+                   "scheduled for removal in Python {remove}")
+            warnings._deprecated("pathlib.PurePath.is_relative_to(*args)",
+                                 msg, remove=(3, 14))
             other = self.with_segments(other, *_deprecated)
         elif not isinstance(other, PurePathBase):
             other = self.with_segments(other)
