@@ -1,3 +1,6 @@
 .idea/
 .tox/
 __pycache__/
+dist/
+sync.sh
+venv*/

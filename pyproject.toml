@@ -22,3 +22,9 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/barneygale/pathlib_abc"
 Issues = "https://github.com/barneygale/pathlib_abc/issues"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  ".gitmodules",
+  "/cpython",
+]
