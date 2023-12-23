@@ -4,10 +4,10 @@ import os
 import errno
 import stat
 import unittest
-import contextlib
 
 from pathlib_abc import UnsupportedOperation, PurePathBase, PathBase
 from pathlib_abc import _posixpath as posixpath
+import contextlib
 
 
 @contextlib.contextmanager
