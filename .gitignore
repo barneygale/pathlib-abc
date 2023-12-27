@@ -4,3 +4,4 @@ __pycache__/
 dist/
 sync.sh
 venv*/
+.python-version
