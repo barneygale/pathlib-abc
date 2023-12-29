@@ -1,5 +1,5 @@
 ===========
-pathlib_abc
+pathlib-abc
 ===========
 
 |pypi| |docs|
@@ -33,10 +33,10 @@ project.
 
 
 
-.. |pypi| image:: https://img.shields.io/pypi/v/pathlib_abc.svg
-    :target: https://pypi.python.org/pypi/pathlib_abc
+.. |pypi| image:: https://img.shields.io/pypi/v/pathlib-abc.svg
+    :target: https://pypi.python.org/pypi/pathlib-abc
     :alt: Latest version released on PyPi
 
-.. |docs| image:: https://readthedocs.org/projects/pathlib_abc/badge
-    :target: http://pathlib_abc.readthedocs.io/en/latest
+.. |docs| image:: https://readthedocs.org/projects/pathlib-abc/badge
+    :target: http://pathlib-abc.readthedocs.io/en/latest
     :alt: Documentation
