@@ -4,4 +4,5 @@ Contents
 --------
 
 .. toctree::
+    examples
     api
