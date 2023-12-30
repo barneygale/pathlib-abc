@@ -5,3 +5,4 @@ dist/
 sync.sh
 venv*/
 .python-version
+docs/_build
