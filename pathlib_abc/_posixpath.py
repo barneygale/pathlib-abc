@@ -1,5 +1,5 @@
 import os
-from posixpath import sep, altsep, join, normcase, splitdrive, dirname
+from posixpath import *
 
 
 def splitroot(p):
