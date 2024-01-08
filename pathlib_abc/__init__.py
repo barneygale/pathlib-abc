@@ -1,4 +1,6 @@
 import functools
+import abc
+import pathlib
 ntpath = object()
 from . import _posixpath as posixpath
 import sys
@@ -169,7 +171,7 @@ class _PathParents(Sequence):
         return "<{}.parents>".format(type(self._path).__name__)
 
 
-class PurePathBase:
+class PurePathBase(abc.ABC):
     """Base class for pure path objects.
 
     This class *does not* provide several magic methods that are defined in
@@ -1143,3 +1145,7 @@ class PathBase(PurePathBase):
     def as_uri(self):
         """Return the path as a URI."""
         self._unsupported("as_uri")
+
+
+PurePathBase.register(pathlib.PurePath)
+PathBase.register(pathlib.Path)
