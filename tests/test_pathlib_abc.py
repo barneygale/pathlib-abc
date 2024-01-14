@@ -6,7 +6,7 @@ import stat
 import unittest
 
 from pathlib_abc import UnsupportedOperation, PathModuleBase, PurePathBase, PathBase
-from pathlib_abc import _posixpath as posixpath
+import posixpath
 
 TESTFN = "TESTFN"
 
