@@ -1,4 +1,5 @@
 import collections
+import posixpath
 import tarfile
 import errno
 import io
@@ -74,6 +75,7 @@ class TarPath(PathBase):
     """A pathlib-compatible interface for tar files."""
 
     __slots__ = ('tarobj',)
+    pathmod = posixpath
 
     def __init__(self, *pathsegments, tarobj):
         super().__init__(*pathsegments)

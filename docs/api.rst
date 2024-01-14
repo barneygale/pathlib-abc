@@ -14,20 +14,85 @@ Exceptions
 Base classes
 ------------
 
+.. class:: PathModuleBase
+
+   Abstract base class for low-level path syntax manipulation utilities.
+
+   This class provides abstract implementations for methods that derived
+   classes can override selectively. The default implementations raise
+   :exc:`UnsupportedOperation`.
+
 .. class:: PurePathBase(*pathsegments)
 
    Abstract base class for path objects without I/O support.
 
-   Not properly documented yet.
+   This class *does not* provide several magic methods that are defined in
+   its subclass ``PurePath``. They are: ``__fspath__``, ``__bytes__``,
+   ``__repr__``, ``__reduce__``, ``__hash__``, ``__eq__``, ``__lt__``,
+   ``__le__``, ``__gt__``, ``__ge__``.
 
 .. class:: PathBase(*pathsegments)
 
-   Abstract base class for path objects with I/O support.
+   Abstract base class for path objects with I/O support. This is a subclass
+   of :class:`PurePathBase`.
 
    This class provides abstract implementations for methods that derived
    classes can override selectively. The default implementations of the most
    basic methods, like :meth:`stat` and :meth:`iterdir`, directly raise
    :exc:`UnsupportedOperation`
+
+
+Controlling path syntax
+-----------------------
+
+Path modules provide a subset of the ``os.path`` API, specifically those
+functions needed to provide :class:`PurePathBase` functionality.
+
+Python itself provides the ``posixpath`` and ``ntpath`` modules, which can be
+assigned to :attr:`PurePathBase.pathmod` to implement path objects with POSIX
+or Windows syntax.
+
+.. attribute:: PurePathBase.pathmod
+
+   Object implementing the :class:`PathModuleBase` interface, such as
+   ``posixpath`` or ``ntpath``. This is used to implement lexical operations
+   on paths such as joining and splitting. The default value is an instance of
+   :class:`PathModuleBase`, which causes all methods to raise
+   :exc:`UnsupportedOperation`.
+
+Users may provide a custom path syntax by subclassing :class:`PathModuleBase`,
+and assigning an instance of their subclass to
+:attr:`~PurePathBase.pathmod`. Subclasses should implement the following
+attributes and methods:
+
+.. attribute:: PathModuleBase.sep
+
+   The character used to separate path components.
+
+.. method:: PathModuleBase.join(path, *paths)
+
+   Return a path formed by joining the path segments together.
+
+.. method:: PathModuleBase.split(path)
+
+   Split the path into a pair ``(head, tail)``, where *head* is everything
+   before the final path separator, and *tail* is everything after. Either
+   part may be empty.
+
+.. method:: PathModuleBase.splitdrive(path)
+
+   Split the path into a 2-item tuple ``(drive, tail)``, where *drive* is a
+   device name or mount point, and *tail* is everything after the drive.
+   Either part may be empty.
+
+.. method:: PathModuleBase.normcase(path)
+
+   Return a path with its case normalized.
+
+.. method:: PathModuleBase.isabs(path)
+
+   Return whether the path is absolute, i.e. unaffected by the current
+   directory or drive.
 
 
 Parsing and generating URIs
@@ -40,7 +105,7 @@ Parsing and generating URIs
    The default implementation of this method immediately raises
    :exc:`UnsupportedOperation`.
 
-.. method:: PurePath.as_uri()
+.. method:: PathBase.as_uri()
 
    Represent the path as a URI.
 
@@ -61,6 +126,7 @@ Querying status and type
    :exc:`UnsupportedOperation`.
 
 .. method:: PathBase.lstat()
+.. method:: PathBase.samefile(other_path)
 .. method:: PathBase.exists(*, follow_symlinks=True)
 .. method:: PathBase.is_dir(*, follow_symlinks=True)
 .. method:: PathBase.is_file(*, follow_symlinks=True)
@@ -70,17 +136,16 @@ Querying status and type
 .. method:: PathBase.is_fifo()
 .. method:: PathBase.is_block_device()
 .. method:: PathBase.is_char_device()
-.. method:: PathBase.samefile(other_path)
 
    The default implementations of these methods call :meth:`stat`.
 
 .. method:: PathBase.is_junction()
 
-      Returns ``True`` if the path points to a junction.
+   Returns ``True`` if the path points to a junction.
 
-      The default implementation of this method returns ``False`` rather than
-      raising :exc:`UnsupportedOperation`, because junctions are almost never
-      available in virtual filesystems.
+   The default implementation of this method returns ``False`` rather than
+   raising :exc:`UnsupportedOperation`, because junctions are almost never
+   available in virtual filesystems.
 
 
 Reading and writing files
