@@ -6,3 +6,4 @@ Contents
 .. toctree::
     examples
     api
+    changes
