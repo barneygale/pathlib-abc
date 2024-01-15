@@ -4,6 +4,12 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet
+
+
+v0.2.0
+------
+
 - Add ``PathModuleBase`` ABC to support path syntax customization.
 - Add CI. Thank you Edgar Ramírez Mondragón!
 - Return paths with trailing slashes if a glob pattern ends with a slash.
