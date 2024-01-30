@@ -7,3 +7,4 @@ Contents
     examples
     api
     changes
+    license

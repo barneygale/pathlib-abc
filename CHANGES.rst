@@ -8,6 +8,7 @@ Unreleased
 - Revert ``match()`` back to 3.12 behaviour (no recursive wildcards).
 - Improve walking and globbing performance.
 - Expand test coverage.
+- Clarify that we're using the PSF license.
 
 
 v0.2.0
