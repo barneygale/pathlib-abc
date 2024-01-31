@@ -6,6 +6,7 @@ Unreleased
 
 - Add ``PurePathBase.full_match()``.
 - Revert ``match()`` back to 3.12 behaviour (no recursive wildcards).
+- Disallow passing ``bytes`` to initialisers.
 - Improve walking and globbing performance.
 - Expand test coverage.
 - Clarify that we're using the PSF license.
