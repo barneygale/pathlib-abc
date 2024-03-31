@@ -75,7 +75,7 @@ class TarPath(PathBase):
     """A pathlib-compatible interface for tar files."""
 
     __slots__ = ('tarobj',)
-    pathmod = posixpath
+    parser = posixpath
 
     def __init__(self, *pathsegments, tarobj):
         super().__init__(*pathsegments)

@@ -14,7 +14,7 @@ Exceptions
 Base classes
 ------------
 
-.. class:: PathModuleBase
+.. class:: ParserBase
 
    Abstract base class for low-level path syntax manipulation utilities.
 
@@ -45,51 +45,50 @@ Base classes
 Controlling path syntax
 -----------------------
 
-Path modules provide a subset of the ``os.path`` API, specifically those
+Path parsers provide a subset of the ``os.path`` API, specifically those
 functions needed to provide :class:`PurePathBase` functionality.
 
 Python itself provides the ``posixpath`` and ``ntpath`` modules, which can be
-assigned to :attr:`PurePathBase.pathmod` to implement path objects with POSIX
+assigned to :attr:`PurePathBase.parser` to implement path objects with POSIX
 or Windows syntax.
 
-.. attribute:: PurePathBase.pathmod
+.. attribute:: PurePathBase.parser
 
-   Object implementing the :class:`PathModuleBase` interface, such as
+   Object implementing the :class:`ParserBase` interface, such as
    ``posixpath`` or ``ntpath``. This is used to implement lexical operations
    on paths such as joining and splitting. The default value is an instance of
-   :class:`PathModuleBase`, which causes all methods to raise
+   :class:`ParserBase`, which causes all methods to raise
    :exc:`UnsupportedOperation`.
 
-Users may provide a custom path syntax by subclassing :class:`PathModuleBase`,
-and assigning an instance of their subclass to
-:attr:`~PurePathBase.pathmod`. Subclasses should implement the following
-attributes and methods:
+Users may provide a custom path syntax by subclassing :class:`ParserBase`, and
+assigning an instance of their subclass to :attr:`~PurePathBase.parser`.
+Subclasses should implement the following attributes and methods:
 
-.. attribute:: PathModuleBase.sep
+.. attribute:: ParserBase.sep
 
    The character used to separate path components.
 
-.. method:: PathModuleBase.join(path, *paths)
+.. method:: ParserBase.join(path, *paths)
 
    Return a path formed by joining the path segments together.
 
-.. method:: PathModuleBase.split(path)
+.. method:: ParserBase.split(path)
 
    Split the path into a pair ``(head, tail)``, where *head* is everything
    before the final path separator, and *tail* is everything after. Either
    part may be empty.
 
-.. method:: PathModuleBase.splitdrive(path)
+.. method:: ParserBase.splitdrive(path)
 
    Split the path into a 2-item tuple ``(drive, tail)``, where *drive* is a
    device name or mount point, and *tail* is everything after the drive.
    Either part may be empty.
 
-.. method:: PathModuleBase.normcase(path)
+.. method:: ParserBase.normcase(path)
 
    Return a path with its case normalized.
 
-.. method:: PathModuleBase.isabs(path)
+.. method:: ParserBase.isabs(path)
 
    Return whether the path is absolute, i.e. unaffected by the current
    directory or drive.
