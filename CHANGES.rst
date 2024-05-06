@@ -8,6 +8,7 @@ Unreleased
   to ``PurePathBase.parser``.
 - Add ``PurePathBase.full_match()``.
 - Revert ``match()`` back to 3.12 behaviour (no recursive wildcards).
+- Replace ``PathBase.glob(follow_symlinks=...)`` with ``recurse_symlinks=...``.
 - Disallow passing ``bytes`` to initialisers.
 - Improve walking and globbing performance.
 - Expand test coverage.

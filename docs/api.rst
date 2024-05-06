@@ -175,8 +175,8 @@ Iterating over directories
    The default implementation of this method immediately raises
    :exc:`UnsupportedOperation`.
 
-.. method:: PathBase.glob(pattern, *, case_sensitive=None, follow_symlinks=None)
-.. method:: PathBase.rglob(pattern, *, case_sensitive=None, follow_symlinks=None)
+.. method:: PathBase.glob(pattern, *, case_sensitive=None, recurse_symlinks=True)
+.. method:: PathBase.rglob(pattern, *, case_sensitive=None, recurse_symlinks=True)
 .. method:: PathBase.walk(top_down=True, on_error=None, follow_symlinks=False)
 
    The default implementations of these methods call :meth:`iterdir` and
