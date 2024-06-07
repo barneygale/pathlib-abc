@@ -4,6 +4,11 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet
+
+v0.3.0
+------
+
 - Rename ``PathModuleBase`` to ``ParserBase``, and ``PurePathBase.pathmod``
   to ``PurePathBase.parser``.
 - Add ``ParserBase.splitext()``.
