@@ -5,10 +5,10 @@ import functools
 import operator
 
 
-special_parts = ('', '.', '..')
 magic_check = re.compile('([*?[])')
 magic_check_bytes = re.compile(b'([*?[])')
-no_recurse_symlinks = object()
+_special_parts = ('', '.', '..')
+_no_recurse_symlinks = object()
 
 
 def translate(pat, *, recursive=False, include_hidden=False, seps=None):
@@ -67,7 +67,7 @@ def translate(pat, *, recursive=False, include_hidden=False, seps=None):
 
 
 @functools.lru_cache(maxsize=512)
-def compile_pattern(pat, sep, case_sensitive, recursive=True):
+def _compile_pattern(pat, sep, case_sensitive, recursive=True):
     """Compile given glob pattern to a re.Pattern object (observing case
     sensitivity)."""
     flags = 0 if case_sensitive else re.IGNORECASE
@@ -75,8 +75,8 @@ def compile_pattern(pat, sep, case_sensitive, recursive=True):
     return re.compile(regex, flags=flags).match
 
 
-class Globber:
-    """Class providing shell-style pattern matching and globbing.
+class _GlobberBase:
+    """Abstract class providing shell-style pattern matching and globbing.
     """
 
     def __init__(self, sep, case_sensitive, case_pedantic=False, recursive=False):
@@ -85,35 +85,42 @@ class Globber:
         self.case_pedantic = case_pedantic
         self.recursive = recursive
 
-    # Low-level methods
+    # Abstract methods
 
-    lstat = operator.methodcaller('lstat')
-    add_slash = operator.methodcaller('joinpath', '')
+    @staticmethod
+    def lexists(path):
+        """Implements os.path.lexists().
+        """
+        raise NotImplementedError
 
     @staticmethod
     def scandir(path):
-        """Emulates os.scandir(), which returns an object that can be used as
-        a context manager. This method is called by walk() and glob().
+        """Implements os.scandir().
         """
-        from contextlib import nullcontext
-        return nullcontext(path.iterdir())
+        raise NotImplementedError
+
+    @staticmethod
+    def add_slash(path):
+        """Returns a path with a trailing slash added.
+        """
+        raise NotImplementedError
 
     @staticmethod
     def concat_path(path, text):
-        """Appends text to the given path.
+        """Implements path concatenation.
         """
-        return path.with_segments(path._raw_path + text)
+        raise NotImplementedError
 
     @staticmethod
     def parse_entry(entry):
         """Returns the path of an entry yielded from scandir().
         """
-        return entry
+        raise NotImplementedError
 
     # High-level methods
 
     def compile(self, pat):
-        return compile_pattern(pat, self.sep, self.case_sensitive, self.recursive)
+        return _compile_pattern(pat, self.sep, self.case_sensitive, self.recursive)
 
     def selector(self, parts):
         """Returns a function that selects from a given path, walking and
@@ -124,7 +131,7 @@ class Globber:
         part = parts.pop()
         if self.recursive and part == '**':
             selector = self.recursive_selector
-        elif part in special_parts:
+        elif part in _special_parts:
             selector = self.special_selector
         elif not self.case_pedantic and magic_check.search(part) is None:
             selector = self.literal_selector
@@ -207,9 +214,9 @@ class Globber:
         # the recursive walk. As a result, non-special pattern segments
         # following a '**' wildcard don't require additional filesystem access
         # to expand.
-        follow_symlinks = self.recursive is not no_recurse_symlinks
+        follow_symlinks = self.recursive is not _no_recurse_symlinks
         if follow_symlinks:
-            while parts and parts[-1] not in special_parts:
+            while parts and parts[-1] not in _special_parts:
                 part += self.sep + parts.pop()
 
         match = None if part == '**' else self.compile(part)
@@ -264,53 +271,14 @@ class Globber:
             # Optimization: this path is already known to exist, e.g. because
             # it was returned from os.scandir(), so we skip calling lstat().
             yield path
-        else:
-            try:
-                self.lstat(path)
-                yield path
-            except OSError:
-                pass
-
-    @classmethod
-    def walk(cls, root, top_down, on_error, follow_symlinks):
-        """Walk the directory tree from the given root, similar to os.walk().
-        """
-        paths = [root]
-        while paths:
-            path = paths.pop()
-            if isinstance(path, tuple):
-                yield path
-                continue
-            try:
-                with cls.scandir(path) as scandir_it:
-                    dirnames = []
-                    filenames = []
-                    if not top_down:
-                        paths.append((path, dirnames, filenames))
-                    for entry in scandir_it:
-                        name = entry.name
-                        try:
-                            if entry.is_dir(follow_symlinks=follow_symlinks):
-                                if not top_down:
-                                    paths.append(cls.parse_entry(entry))
-                                dirnames.append(name)
-                            else:
-                                filenames.append(name)
-                        except OSError:
-                            filenames.append(name)
-            except OSError as error:
-                if on_error is not None:
-                    on_error(error)
-            else:
-                if top_down:
-                    yield path, dirnames, filenames
-                    if dirnames:
-                        prefix = cls.add_slash(path)
-                        paths += [cls.concat_path(prefix, d) for d in reversed(dirnames)]
+        elif self.lexists(path):
+            yield path
 
 
-class StringGlobber(Globber):
-    lstat = staticmethod(os.lstat)
+class _StringGlobber(_GlobberBase):
+    """Provides shell-style pattern matching and globbing for string paths.
+    """
+    lexists = staticmethod(os.path.lexists)
     scandir = staticmethod(os.scandir)
     parse_entry = operator.attrgetter('path')
     concat_path = operator.add

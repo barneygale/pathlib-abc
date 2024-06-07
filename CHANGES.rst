@@ -6,9 +6,13 @@ Unreleased
 
 - Rename ``PathModuleBase`` to ``ParserBase``, and ``PurePathBase.pathmod``
   to ``PurePathBase.parser``.
+- Add ``ParserBase.splitext()``.
 - Add ``PurePathBase.full_match()``.
+- Treat a single dot ("``.``") as a valid file extension.
 - Revert ``match()`` back to 3.12 behaviour (no recursive wildcards).
 - Replace ``PathBase.glob(follow_symlinks=...)`` with ``recurse_symlinks=...``.
+- Suppress all ``OSError`` exceptions from ``PathBase.exists()`` and
+  ``is_*()`` methods.
 - Disallow passing ``bytes`` to initialisers.
 - Improve walking and globbing performance.
 - Expand test coverage.
