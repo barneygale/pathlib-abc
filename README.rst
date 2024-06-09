@@ -4,7 +4,7 @@ pathlib-abc
 
 |pypi| |docs|
 
-Base classes for ``pathlib.Path``-ish objects. Requires Python 3.8+.
+Base classes for ``pathlib.Path``-ish objects. Requires Python 3.7+.
 
 This package is a preview of ``pathlib`` functionality planned for a future
 release of Python; specifically, it provides two ABCs that can be used to
