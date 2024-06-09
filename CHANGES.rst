@@ -6,6 +6,11 @@ Unreleased
 
 - Nothing yet
 
+v0.3.1
+------
+
+- Add support for Python 3.7.
+
 v0.3.0
 ------
 
