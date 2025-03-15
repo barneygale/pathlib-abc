@@ -1,4 +1,0 @@
-[submodule "cpython"]
-	path = cpython
-	url = git@github.com:barneygale/cpython.git
-	branch = pathlib_abc
