@@ -13,8 +13,10 @@ Protocols for supporting classes in pathlib.
 from abc import ABC, abstractmethod
 from pathlib_abc._glob import _PathGlobber
 from pathlib_abc._os import magic_open, ensure_distinct_paths, ensure_different_files, copyfileobj
-from pathlib import PurePath, Path
 from typing import Optional, Protocol, runtime_checkable
+
+
+__all__ = ['PathParser', 'PathInfo', 'JoinablePath', 'ReadablePath', 'WritablePath', 'magic_open']
 
 
 def _explode_path(path):
@@ -432,6 +434,7 @@ class _WritablePath(_JoinablePath):
                         copyfileobj(source_f, target_f)
 
 
-_JoinablePath.register(PurePath)
-_ReadablePath.register(Path)
-_WritablePath.register(Path)
+PathParser = _PathParser
+JoinablePath = _JoinablePath
+ReadablePath = _ReadablePath
+WritablePath = _WritablePath
