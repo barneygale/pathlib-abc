@@ -4,6 +4,11 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet.
+
+v0.4.0
+------
+
 - Several months worth of upstream refactoring:
 
   - Rename ``PurePathBase`` to ``JoinablePath``.
