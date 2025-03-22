@@ -1,7 +1,7 @@
 Examples
 ========
 
-TarPath
+ZipPath
 -------
 
-.. literalinclude:: examples/tarpath.py
+.. literalinclude:: examples/zippath.py

@@ -2,285 +2,367 @@ API Reference
 =============
 
 
-Exceptions
-----------
+Functions
+---------
 
-.. exception:: UnsupportedOperation
+This package offers the following functions:
 
-   An exception inheriting :exc:`NotImplementedError` that is raised when an
-   unsupported operation is called on a path object.
+.. function:: magic_open(path, mode='r' buffering=-1, \
+                         encoding=None, errors=None, newline=None)
+
+    Open the path and return a file object. Unlike the built-in ``open()``
+    function, this function tries to call :meth:`!__open_r__`,
+    :meth:`~ReadablePath.__open_rb__`, :meth:`!__open_w__`, and
+    :meth:`~WritablePath.__open_wb__` methods on the given path object as
+    appropriate for the given mode.
 
 
-Base classes
-------------
+Protocols
+---------
 
-.. class:: ParserBase
+This package offers the following protocols:
 
-   Abstract base class for low-level path syntax manipulation utilities.
+.. class:: PathParser
 
-   This class provides abstract implementations for methods that derived
-   classes can override selectively. The default implementations raise
-   :exc:`UnsupportedOperation`.
+   Protocol for path parser objects, which split and join string paths.
 
-.. class:: PurePathBase(*pathsegments)
+   Subclasses of :class:`JoinablePath` should provide a path parser object as
+   an attribute named :attr:`~JoinablePath.parser`.
+
+   Path parsers provide a subset of the ``os.path`` API. Python itself
+   provides the ``posixpath`` and ``ntpath`` modules, which can be assigned
+   to :attr:`~JoinablePath.parser` to implement path objects with POSIX or
+   Windows syntax.
+
+   .. attribute:: sep
+
+      Character used to separate path components.
+
+   .. attribute:: altsep
+
+      Alternative path separator character, or ``None``.
+
+   .. method:: split(path)
+
+      Split the path into a pair ``(head, tail)``, where *head* is
+      everything before the final path separator, and *tail* is everything
+      after. Either part may be empty.
+
+   .. method:: splitext(name)
+
+      Split the filename into a pair ``(stem, ext)``, where *ext* is a file
+      extension beginning with a dot and containing at most one dot, and
+      *stem* is everything before the extension.
+
+   .. method:: normcase(path)
+
+      Return a path with its case normalized.
+
+
+.. class:: PathInfo
+
+   Protocol for path information objects, which provide file type info.
+
+   Subclasses of :class:`ReadablePath` should provide a path information
+   object as an attribute named :attr:`~ReadablePath.info`.
+
+   .. method:: exists(*, follow_symlinks=True)
+
+      Return ``True`` if the path is an existing file or directory, or any
+      other kind of file; return ``False`` if the path doesn't exist.
+
+      If *follow_symlinks* is ``False``, return ``True`` for symlinks without
+      checking if their targets exist.
+
+   .. method:: is_dir(*, follow_symlinks=True)
+
+      Return ``True`` if the path is a directory, or a symbolic link pointing
+      to a directory; return ``False`` if the path is (or points to) any other
+      kind of file, or if it doesn't exist.
+
+      If *follow_symlinks* is ``False``, return ``True`` only if the path
+      is a directory (without following symlinks); return ``False`` if the
+      path is any other kind of file, or if it doesn't exist.
+
+   .. method:: is_file(*, follow_symlinks=True)
+
+      Return ``True`` if the path is a file, or a symbolic link pointing to
+      a file; return ``False`` if the path is (or points to) a directory or
+      other non-file, or if it doesn't exist.
+
+      If *follow_symlinks* is ``False``, return ``True`` only if the path
+      is a file (without following symlinks); return ``False`` if the path
+      is a directory or other other non-file, or if it doesn't exist.
+
+   .. method:: is_symlink()
+
+      Return ``True`` if the path is a symbolic link (even if broken); return
+      ``False`` if the path is a directory or any kind of file, or if it
+      doesn't exist.
+
+
+Abstract base classes
+---------------------
+
+This package offers the following abstract base classes:
+
+.. list-table::
+   :header-rows: 1
+
+   - * ABC
+     * Inherits from
+     * Abstract methods
+     * Mixin methods
+
+   - * :class:`JoinablePath`
+     *
+     * :attr:`~JoinablePath.parser`
+
+       :meth:`~JoinablePath.__str__`
+
+       :meth:`~JoinablePath.with_segments`
+     * :attr:`~JoinablePath.parts`
+       :attr:`~JoinablePath.anchor`
+
+       :attr:`~JoinablePath.parent`
+       :attr:`~JoinablePath.parents`
+
+       :attr:`~JoinablePath.name`
+       :attr:`~JoinablePath.stem`
+       :attr:`~JoinablePath.suffix`
+       :attr:`~JoinablePath.suffixes`
+
+       :meth:`~JoinablePath.with_name`
+       :meth:`~JoinablePath.with_stem`
+       :meth:`~JoinablePath.with_suffix`
+
+       :meth:`~JoinablePath.joinpath`
+       :meth:`~JoinablePath.__truediv__`
+       :meth:`~JoinablePath.__rtruediv__`
+
+       :meth:`~JoinablePath.full_match`
+
+   - * :class:`ReadablePath`
+     * :class:`JoinablePath`
+     * :attr:`~ReadablePath.info`
+
+       :meth:`~ReadablePath.__open_rb__`
+
+       :meth:`~ReadablePath.iterdir`
+
+       :meth:`~ReadablePath.readlink`
+     * :meth:`~ReadablePath.read_bytes`
+       :meth:`~ReadablePath.read_text`
+
+       :meth:`~ReadablePath.copy`
+       :meth:`~ReadablePath.copy_into`
+
+       :meth:`~ReadablePath.glob`
+
+       :meth:`~ReadablePath.walk`
+
+   - * :class:`WritablePath`
+     * :class:`JoinablePath`
+     * :meth:`~WritablePath.__open_wb__`
+
+       :meth:`~WritablePath.mkdir`
+
+       :meth:`~WritablePath.symlink_to`
+     * :meth:`~WritablePath.write_bytes`
+       :meth:`~WritablePath.write_text`
+
+       :meth:`~WritablePath._copy_from`
+
+
+.. class:: JoinablePath(*pathsegments)
 
    Abstract base class for path objects without I/O support.
 
-   This class *does not* provide several magic methods that are defined in
-   its subclass ``PurePath``. They are: ``__fspath__``, ``__bytes__``,
-   ``__repr__``, ``__reduce__``, ``__hash__``, ``__eq__``, ``__lt__``,
-   ``__le__``, ``__gt__``, ``__ge__``.
+   .. attribute:: parser
 
-.. class:: PathBase(*pathsegments)
+      (**Abstract attribute**.) Implementation of :class:`PathParser` used for
+      low-level splitting and joining.
 
-   Abstract base class for path objects with I/O support. This is a subclass
-   of :class:`PurePathBase`.
+   .. method:: __str__()
 
-   This class provides abstract implementations for methods that derived
-   classes can override selectively. The default implementations of the most
-   basic methods, like :meth:`stat` and :meth:`iterdir`, directly raise
-   :exc:`UnsupportedOperation`
+      (**Abstract method**.) Return a string representation of the path.
 
+   .. method:: with_segments(*pathsegments)
 
-Controlling path syntax
------------------------
+      (**Abstract method**.) Create a new path object of the same type by
+      combining the given *pathsegments*. This method is called whenever a
+      derivative path is created, such as from :attr:`parent` and
+      :meth:`with_name`.
 
-Path parsers provide a subset of the ``os.path`` API, specifically those
-functions needed to provide :class:`PurePathBase` functionality.
+   .. attribute:: parts
 
-Python itself provides the ``posixpath`` and ``ntpath`` modules, which can be
-assigned to :attr:`PurePathBase.parser` to implement path objects with POSIX
-or Windows syntax.
+      Tuple of path components. The default implementation repeatedly calls
+      :meth:`PathParser.split` to decompose the path.
 
-.. attribute:: PurePathBase.parser
+   .. attribute:: anchor
 
-   Object implementing the :class:`ParserBase` interface, such as
-   ``posixpath`` or ``ntpath``. This is used to implement lexical operations
-   on paths such as joining and splitting. The default value is an instance of
-   :class:`ParserBase`, which causes all methods to raise
-   :exc:`UnsupportedOperation`.
+      The path's irreducible prefix. The default implementation repeatedly
+      calls :meth:`PathParser.split` until the directory name stops changing.
 
-Users may provide a custom path syntax by subclassing :class:`ParserBase`, and
-assigning an instance of their subclass to :attr:`~PurePathBase.parser`.
-Subclasses should implement the following attributes and methods:
+   .. attribute:: parent
 
-.. attribute:: ParserBase.sep
+      The path's lexical parent. The default implementation calls
+      :meth:`PathParser.split` once.
 
-   The character used to separate path components.
+   .. attribute:: parents
 
-.. method:: ParserBase.join(path, *paths)
+      Sequence of the path's lexical parents, beginning with the immediate
+      parent. The default implementation repeatedly calls
+      :meth:`PathParser.split`.
 
-   Return a path formed by joining the path segments together.
+   .. attribute:: name
 
-.. method:: ParserBase.split(path)
+      The path's base name. The name is empty if the path has only an anchor,
+      or ends with a slash. The default implementation calls
+      :meth:`PathParser.split` once.
 
-   Split the path into a pair ``(head, tail)``, where *head* is everything
-   before the final path separator, and *tail* is everything after. Either
-   part may be empty.
+   .. attribute:: stem
 
-.. method:: ParserBase.splitdrive(path)
+      The path's base name with the file extension omitted. The default
+      implementation calls :meth:`PathParser.splitext` on :attr:`name`.
 
-   Split the path into a 2-item tuple ``(drive, tail)``, where *drive* is a
-   device name or mount point, and *tail* is everything after the drive.
-   Either part may be empty.
+   .. attribute:: suffix
 
-.. method:: ParserBase.normcase(path)
+      The path's file extension. The default implementation calls
+      :meth:`PathParser.splitext` on :attr:`name`.
 
-   Return a path with its case normalized.
+   .. attribute:: suffixes
 
-.. method:: ParserBase.isabs(path)
+      Sequence of the path's file extensions. The default implementation
+      repeatedly calls :meth:`PathParser.splitext` on :attr:`name`.
 
-   Return whether the path is absolute, i.e. unaffected by the current
-   directory or drive.
+   .. method:: with_name(name)
 
+      Returns a new path with a different :attr:`name`. The name may be empty.
+      The default implementation calls :meth:`PathParser.split` to remove the
+      old name, and :meth:`with_segments` to create the new path object.
 
-Parsing and generating URIs
----------------------------
+   .. method:: with_stem(stem)
 
-.. classmethod:: PathBase.from_uri(uri)
+      Returns a new path with a different :attr:`stem`, similarly to
+      :meth:`with_name`.
 
-   Return a new path object from parsing a URI.
+   .. method:: with_suffix(suffix)
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+      Returns a new path with a different :attr:`suffix`, similarly to
+      :meth:`with_name`.
 
-.. method:: PathBase.as_uri()
+   .. method:: joinpath(*pathsegments)
 
-   Represent the path as a URI.
+      Returns a new path with the given path segments joined onto the end. The
+      default implementation calls :meth:`with_segments` with the combined
+      segments.
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+   .. method:: __truediv__(pathsegment)
 
+      Returns a new path with the given path segment joined on the end.
 
-Querying status and type
-------------------------
+   .. method:: __rtruediv__(pathsegment)
 
-.. method:: PathBase.stat(*, follow_symlinks=True)
+      Returns a new path with the given path segment joined on the beginning.
 
-   Returns information about the path. Implementations should return an object
-   that resembles an ``os.stat_result`` it should at least have ``st_mode``,
-   ``st_dev`` and ``st_ino`` attributes.
+   .. method:: full_match(pattern)
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+      Returns true if the path matches the given glob-style pattern, false
+      otherwise. The default implementation uses :meth:`PathParser.normcase`
+      to establish case sensitivity.
 
-.. method:: PathBase.lstat()
-.. method:: PathBase.samefile(other_path)
-.. method:: PathBase.exists(*, follow_symlinks=True)
-.. method:: PathBase.is_dir(*, follow_symlinks=True)
-.. method:: PathBase.is_file(*, follow_symlinks=True)
-.. method:: PathBase.is_mount()
-.. method:: PathBase.is_symlink()
-.. method:: PathBase.is_socket()
-.. method:: PathBase.is_fifo()
-.. method:: PathBase.is_block_device()
-.. method:: PathBase.is_char_device()
 
-   The default implementations of these methods call :meth:`stat`.
+.. class:: ReadablePath
 
-.. method:: PathBase.is_junction()
+   Abstract base class for path objects with support for reading data. This
+   is a subclass of :class:`JoinablePath`
 
-   Returns ``True`` if the path points to a junction.
+   .. attribute:: info
 
-   The default implementation of this method returns ``False`` rather than
-   raising :exc:`UnsupportedOperation`, because junctions are almost never
-   available in virtual filesystems.
+      (**Abstract attribute**.) Implementation of :class:`PathInfo` that
+      supports querying the file type.
 
+   .. method:: __open_rb__(buffering=-1)
 
-Reading and writing files
--------------------------
+      (**Abstract method.**) Open the path for reading in binary mode, and
+      return a file object.
 
-.. method:: PathBase.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)
+   .. method:: iterdir()
 
-   Opens the path as a file-like object.
+      (**Abstract method**.) Yield path objects for the directory contents.
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+   .. method:: readlink()
 
-.. method:: PathBase.read_bytes()
-.. method:: PathBase.read_text(encoding=None, errors=None, newline=None)
-.. method:: PathBase.write_bytes(data)
-.. method:: PathBase.write_text(data, encoding=None, errors=None, newline=None)
+      (**Abstract method**.) Returns the symlink target as a new path object.
 
-   The default implementations of these methods call :meth:`open`.
+   .. method:: read_bytes()
 
+      Returns the binary contents of the path. The default implementation
+      calls :meth:`__open_rb__`.
 
-Iterating over directories
---------------------------
+   .. method:: read_text(encoding=None, errors=None, newline=None)
 
-.. method:: PathBase.iterdir()
+      Returns the text contents of the path. The default implementation calls
+      :meth:`!__open_r__` if it exists, falling back to :meth:`__open_rb__`.
 
-   Yields path objects representing directory children.
+   .. method:: copy(target, **kwargs)
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+      Copies the path to the given target, which should be an instance of
+      :class:`WritablePath`. The default implementation calls
+      :meth:`WritablePath._copy_from`, passing along keyword arguments.
 
-.. method:: PathBase.glob(pattern, *, case_sensitive=None, recurse_symlinks=True)
-.. method:: PathBase.rglob(pattern, *, case_sensitive=None, recurse_symlinks=True)
-.. method:: PathBase.walk(top_down=True, on_error=None, follow_symlinks=False)
+   .. method:: copy_into(target_dir, **kwargs)
 
-   The default implementations of these methods call :meth:`iterdir` and
-   :meth:`is_dir`.
+      Copies the path *into* the given target directory, which should be an
+      instance of :class:`WritablePath`. See :meth:`copy`.
 
+   .. method:: glob(pattern, *, recurse_symlinks=True)
 
-Making paths absolute
----------------------
+      Yields path objects in the file tree that match the given glob-style
+      pattern.
 
-.. method:: PathBase.absolute()
+   .. method:: walk(top_down=True, on_error=None, follow_symlinks=True)
 
-   Returns an absolute version of this path.
+      Yields a ``(dirpath, dirnames, filenames)`` triplet for each directory
+      in the file tree, like ``os.walk()``.
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
 
-.. classmethod:: PathBase.cwd()
+.. class:: WritablePath
 
-   The default implementation of this method calls :meth:`absolute`.
+   Abstract base class for path objects with support for writing data. This
+   is a subclass of :class:`JoinablePath`
 
+   .. method:: __open_wb__(buffering=-1)
 
-Expanding home directories
---------------------------
+      (**Abstract method**.) Open the path for writing in binary mode, and
+      return a file object.
 
-.. method:: PathBase.expanduser()
+   .. method:: mkdir()
 
-   Return a new path with expanded ``~`` and ``~user`` constructs.
+      (**Abstract method**.) Create this path as a directory.
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
+   .. method:: symlink_to(target, target_is_directory=False)
 
-.. classmethod:: PathBase.home()
+      (**Abstract method**.) Create this path as a symlink to the given
+      target.
 
-   The default implementation of this method calls :meth:`expanduser`.
+   .. method:: write_bytes(data)
 
+      Write the given binary data to the path. The default implementation
+      calls :meth:`__open_wb__`.
 
-Resolving symlinks
-------------------
+   .. method:: write_text(data, encoding=None, errors=None, newline=None)
 
-.. method:: PathBase.readlink()
+      Write the given text data to the path. The default implementation calls
+      :meth:`!__open_rw__` if it exists, falling back to :meth:`__open_wb__`.
 
-   Return the path to which the symbolic link points.
+   .. method:: _copy_from(source, *, follow_symlinks=True)
 
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
-
-.. method:: PathBase.resolve(strict=False)
-
-   Resolves symlinks and eliminates ``..`` path components. If supported,
-   make the path absolute.
-
-   The default implementation of this method first calls :meth:`absolute`, but
-   suppresses any resulting :exc:`UnsupportedOperation` exception; this allows
-   paths to be resolved on filesystems that lack a notion of a working
-   directory. It calls :meth:`stat` on each ancestor path, and
-   :meth:`readlink` when a stat result indicates a symlink. :exc:`OSError` is
-   raised if more than 40 symlinks are encountered while resolving a path;
-   this is taken to indicate a loop.
-
-
-Permissions
------------
-
-.. method:: PathBase.chmod(mode, *, follow_symlinks=True)
-
-   Change the file permissions.
-
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
-
-.. method:: PathBase.lchmod(mode)
-
-   The default implementation of this method calls :meth:`chmod`.
-
-
-Ownership
----------
-
-.. method:: PathBase.owner(*, follow_symlinks=True)
-
-   Return the name of the user owning the file.
-
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
-
-.. method:: PathBase.group(*, follow_symlinks=True)
-
-   Return the name of the group owning the file.
-
-   The default implementation of this method immediately raises
-   :exc:`UnsupportedOperation`.
-
-
-Other methods
--------------
-
-.. method:: PathBase.symlink_to(target, target_is_directory=False)
-.. method:: PathBase.hardlink_to(target)
-.. method:: PathBase.touch(mode=0o666, exist_ok=True)
-.. method:: PathBase.mkdir(mode=0o777, parents=False, exist_ok=False)
-.. method:: PathBase.rename(target)
-.. method:: PathBase.replace(target)
-.. method:: PathBase.unlink(missing_ok=False)
-.. method:: PathBase.rmdir()
-
-   The default implementations of these methods immediately raise
-   :exc:`UnsupportedOperation`.
+      Copies the path from the given source, which should be an instance of
+      :class:`ReadablePath`. The default implementation calls
+      :meth:`ReadablePath.info` to establish the type of the source path. It
+      uses :meth:`~ReadablePath.__open_rb__` and :meth:`__open_wb__` to copy
+      regular files; :meth:`~ReadablePath.iterdir` and :meth:`mkdir` to copy
+      directories; and :meth:`~ReadablePath.readlink` and :meth:`symlink_to`
+      to copy symlinks when *follow_symlinks* is false.

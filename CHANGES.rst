@@ -4,7 +4,15 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet
+- Several months worth of upstream refactoring:
+
+  - Rename ``PurePathBase`` to ``JoinablePath``.
+  - Split ``PathBase`` into ``ReadablePath`` and ``WritablePath``.
+  - Replace ``stat()`` with ``info`` attribute and ``PathInfo`` protocol.
+  - Remove many nonessential methods.
+  - Add support for copying between path instances.
+
+- Drop support for Python 3.7 and 3.8.
 
 v0.3.1
 ------
