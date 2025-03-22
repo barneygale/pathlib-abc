@@ -4,29 +4,31 @@ pathlib-abc
 
 |pypi| |docs|
 
-Base classes for ``pathlib.Path``-ish objects. Requires Python 3.7+.
+Base classes for ``pathlib.Path``-ish objects. Requires Python 3.9+.
 
 This package is a preview of ``pathlib`` functionality planned for a future
-release of Python; specifically, it provides two ABCs that can be used to
+release of Python; specifically, it provides three ABCs that can be used to
 implement path classes for non-local filesystems, such as archive files and
 storage servers:
 
-``PurePathBase``
+``JoinablePath``
   Abstract base class for paths that do not perform I/O.
-``PathBase``
-  Abstract base class for paths that perform I/O.
+``ReadablePath``
+  Abstract base class for paths that support reading.
+``WritablePath``
+  Abstract base class for paths that support writing.
 
 These base classes are under active development. Once the base classes reach
-maturity, they will be made part of the Python standard library, and this
+maturity, they may become part of the Python standard library, and this
 package will continue to provide a backport for older Python releases.
 
 
 Contributing
 ------------
 
-Changes to ``pathlib_abc.py`` and ``test_pathlib_abc.py`` must be made in the
-upstream CPython project, and undergo their usual CLA + code review process.
-Once a change lands in CPython, it can be back-ported here.
+Functional changes must be made in the upstream CPython project, and undergo
+their usual CLA + code review process. Once a change lands in CPython, it can
+be back-ported here.
 
 Other changes (such as CI improvements) can be made as pull requests to this
 project.
