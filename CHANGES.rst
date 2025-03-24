@@ -4,7 +4,15 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet.
+- When ``magic_open()`` is called to open a path in binary mode, raise
+  ``ValueError`` if any of the *encoding*, *errors* or *newline* arguments
+  are given.
+- In ``ReadablePath.glob()``, raise ``ValueError`` when given an empty
+  pattern.
+- In ``ReadablePath.glob()`` and ``JoinablePath.full_match()``, stop
+  accepting ``JoinablePath`` objects as patterns. Only strings are allowed.
+- In ``ReadablePath.copy()`` and ``copy_into()``, stop accepting strings as
+  target paths. Only ``WritablePath`` objects are allowed.
 
 v0.4.0
 ------
