@@ -48,6 +48,12 @@ This package offers the following protocols:
       everything before the final path separator, and *tail* is everything
       after. Either part may be empty.
 
+      .. note::
+
+         Trailing slashes are meaningful in ``posixpath`` and ``ntpath``, so
+         ``P('foo/').parent`` is ``P('foo')``, and its
+         :attr:`~JoinablePath.name` is the empty string.
+
    .. method:: splitext(name)
 
       Split the filename into a pair ``(stem, ext)``, where *ext* is a file
@@ -56,7 +62,16 @@ This package offers the following protocols:
 
    .. method:: normcase(path)
 
-      Return a path with its case normalized.
+      Return the path with its case normalized.
+
+      .. note::
+
+         This method is used to detect case sensitivity in
+         :meth:`JoinablePath.full_match` and :meth:`ReadablePath.glob`, where
+         it's called with the string containing a mix of upper and lowercase
+         letters. Case-sensitive filesystems should return the string
+         unchanged, whereas case-insensitive filesystems should return the
+         string with its case modified (e.g. with ``upper()`` or ``lower()``.)
 
 
 .. class:: PathInfo
@@ -174,7 +189,7 @@ This package offers the following abstract base classes:
        :meth:`~WritablePath._copy_from`
 
 
-.. class:: JoinablePath(*pathsegments)
+.. class:: JoinablePath
 
    Abstract base class for path objects without I/O support.
 
@@ -185,7 +200,8 @@ This package offers the following abstract base classes:
 
    .. method:: __str__()
 
-      (**Abstract method**.) Return a string representation of the path.
+      (**Abstract method**.) Return a string representation of the path,
+      suitable for passing to methods of the :attr:`parser`.
 
    .. method:: with_segments(*pathsegments)
 
@@ -238,37 +254,37 @@ This package offers the following abstract base classes:
 
    .. method:: with_name(name)
 
-      Returns a new path with a different :attr:`name`. The name may be empty.
+      Return a new path with a different :attr:`name`. The name may be empty.
       The default implementation calls :meth:`PathParser.split` to remove the
       old name, and :meth:`with_segments` to create the new path object.
 
    .. method:: with_stem(stem)
 
-      Returns a new path with a different :attr:`stem`, similarly to
+      Return a new path with a different :attr:`stem`, similarly to
       :meth:`with_name`.
 
    .. method:: with_suffix(suffix)
 
-      Returns a new path with a different :attr:`suffix`, similarly to
+      Return a new path with a different :attr:`suffix`, similarly to
       :meth:`with_name`.
 
    .. method:: joinpath(*pathsegments)
 
-      Returns a new path with the given path segments joined onto the end. The
+      Return a new path with the given path segments joined onto the end. The
       default implementation calls :meth:`with_segments` with the combined
       segments.
 
    .. method:: __truediv__(pathsegment)
 
-      Returns a new path with the given path segment joined on the end.
+      Return a new path with the given path segment joined on the end.
 
    .. method:: __rtruediv__(pathsegment)
 
-      Returns a new path with the given path segment joined on the beginning.
+      Return a new path with the given path segment joined on the beginning.
 
    .. method:: full_match(pattern)
 
-      Returns true if the path matches the given glob-style pattern, false
+      Return true if the path matches the given glob-style pattern, false
       otherwise. The default implementation uses :meth:`PathParser.normcase`
       to establish case sensitivity.
 
@@ -294,38 +310,40 @@ This package offers the following abstract base classes:
 
    .. method:: readlink()
 
-      (**Abstract method**.) Returns the symlink target as a new path object.
+      (**Abstract method**.) Return the symlink target as a new path object.
 
    .. method:: read_bytes()
 
-      Returns the binary contents of the path. The default implementation
+      Return the binary contents of the path. The default implementation
       calls :meth:`__open_rb__`.
 
    .. method:: read_text(encoding=None, errors=None, newline=None)
 
-      Returns the text contents of the path. The default implementation calls
+      Return the text contents of the path. The default implementation calls
       :meth:`!__open_r__` if it exists, falling back to :meth:`__open_rb__`.
 
    .. method:: copy(target, **kwargs)
 
-      Copies the path to the given target, which should be an instance of
+      Copy the path to the given target, which should be an instance of
       :class:`WritablePath`. The default implementation calls
       :meth:`WritablePath._copy_from`, passing along keyword arguments.
 
    .. method:: copy_into(target_dir, **kwargs)
 
-      Copies the path *into* the given target directory, which should be an
+      Copy the path *into* the given target directory, which should be an
       instance of :class:`WritablePath`. See :meth:`copy`.
 
    .. method:: glob(pattern, *, recurse_symlinks=True)
 
-      Yields path objects in the file tree that match the given glob-style
-      pattern.
+      Yield path objects in the file tree that match the given glob-style
+      pattern. The default implementation uses :attr:`info` and
+      :meth:`iterdir`.
 
    .. method:: walk(top_down=True, on_error=None, follow_symlinks=True)
 
-      Yields a ``(dirpath, dirnames, filenames)`` triplet for each directory
-      in the file tree, like ``os.walk()``.
+      Yield a ``(dirpath, dirnames, filenames)`` triplet for each directory
+      in the file tree, like ``os.walk()``. The default implementation uses
+      :attr:`info` and :meth:`iterdir`.
 
 
 .. class:: WritablePath
@@ -349,17 +367,18 @@ This package offers the following abstract base classes:
 
    .. method:: write_bytes(data)
 
-      Write the given binary data to the path. The default implementation
-      calls :meth:`__open_wb__`.
+      Write the given binary data to the path, and return the number of bytes
+      written. The default implementation calls :meth:`__open_wb__`.
 
    .. method:: write_text(data, encoding=None, errors=None, newline=None)
 
-      Write the given text data to the path. The default implementation calls
-      :meth:`!__open_rw__` if it exists, falling back to :meth:`__open_wb__`.
+      Write the given text data to the path, and return the number of bytes
+      written. The default implementation calls :meth:`!__open_r__` if it
+      exists, falling back to :meth:`__open_wb__`.
 
    .. method:: _copy_from(source, *, follow_symlinks=True)
 
-      Copies the path from the given source, which should be an instance of
+      Copy the path from the given source, which should be an instance of
       :class:`ReadablePath`. The default implementation calls
       :meth:`ReadablePath.info` to establish the type of the source path. It
       uses :meth:`~ReadablePath.__open_rb__` and :meth:`__open_wb__` to copy
