@@ -4,6 +4,11 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet
+
+v0.4.1
+------
+
 - When ``magic_open()`` is called to open a path in binary mode, raise
   ``ValueError`` if any of the *encoding*, *errors* or *newline* arguments
   are given.
