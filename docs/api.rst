@@ -339,7 +339,17 @@ This package offers the following abstract base classes:
       pattern. The default implementation uses :attr:`info` and
       :meth:`iterdir`.
 
-   .. method:: walk(top_down=True, on_error=None, follow_symlinks=True)
+      .. warning::
+
+         For performance reasons, the default value for *recurse_symlinks* is
+         ``True`` in this base class, but for historical reasons, the default
+         is ``False`` in ``pathlib.Path``. Furthermore, ``True`` is the *only*
+         acceptable value for *recurse_symlinks* in this base class.
+
+         For maximum compatibility, users should supply
+         ``recurse_symlinks=True`` explicitly when globbing recursively.
+
+   .. method:: walk(top_down=True, on_error=None, follow_symlinks=False)
 
       Yield a ``(dirpath, dirnames, filenames)`` triplet for each directory
       in the file tree, like ``os.walk()``. The default implementation uses
@@ -373,14 +383,14 @@ This package offers the following abstract base classes:
    .. method:: write_text(data, encoding=None, errors=None, newline=None)
 
       Write the given text data to the path, and return the number of bytes
-      written. The default implementation calls :meth:`!__open_r__` if it
+      written. The default implementation calls :meth:`!__open_w__` if it
       exists, falling back to :meth:`__open_wb__`.
 
    .. method:: _copy_from(source, *, follow_symlinks=True)
 
       Copy the path from the given source, which should be an instance of
-      :class:`ReadablePath`. The default implementation calls
-      :meth:`ReadablePath.info` to establish the type of the source path. It
+      :class:`ReadablePath`. The default implementation uses
+      :attr:`ReadablePath.info` to establish the type of the source path. It
       uses :meth:`~ReadablePath.__open_rb__` and :meth:`__open_wb__` to copy
       regular files; :meth:`~ReadablePath.iterdir` and :meth:`mkdir` to copy
       directories; and :meth:`~ReadablePath.readlink` and :meth:`symlink_to`
