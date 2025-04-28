@@ -4,7 +4,8 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet
+- Emit encoding warnings from ``magic_open()``, ``ReadablePath.read_text()``,
+  and ``WritablePath.write_text()`` at the correct stack level.
 
 v0.4.1
 ------
