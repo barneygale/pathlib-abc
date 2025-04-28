@@ -4,7 +4,7 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet
+- Set correct ``__name__`` for ABCs and ``PathParser``.
 
 v0.4.2
 ------
