@@ -2,6 +2,9 @@ API Reference
 =============
 
 
+.. module:: pathlib_abc
+
+
 Functions
 ---------
 
