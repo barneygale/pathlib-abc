@@ -4,7 +4,14 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet
+- Add ``vfspath()``, which returns the virtual filesystem path as a string.
+- Replace ``JoinablePath.__str__()`` abstract method with ``__vfspath__()``.
+- Replace ``magic_open()`` with ``vfsopen()``. The new function takes the same
+  arguments.
+- Replace ``ReadablePath.__open_rb__()`` abstract method with
+  ``__open_reader__()``, and remove *buffering* argument.
+- Replace ``WritablePath.__open_wb__()`` abstract method with
+  ``__open_writer__()``, and remove *buffering* and add *mode* arguments.
 
 v0.4.3
 ------

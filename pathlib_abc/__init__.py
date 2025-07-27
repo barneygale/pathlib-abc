@@ -11,8 +11,10 @@ Protocols for supporting classes in pathlib.
 
 
 from abc import ABC, abstractmethod
-from pathlib_abc._glob import _PathGlobber
-from pathlib_abc._os import magic_open, ensure_distinct_paths, ensure_different_files, copyfileobj
+from pathlib_abc._glob import _GlobberBase
+from pathlib_abc._os import (
+    copyfileobj, ensure_different_files,
+    ensure_distinct_paths, vfsopen, vfspath)
 from typing import Optional, Protocol, runtime_checkable
 try:
     from io import text_encoding
@@ -66,6 +68,25 @@ class PathInfo(Protocol):
     def is_symlink(self) -> bool: ...
 
 
+class _PathGlobber(_GlobberBase):
+    """Provides shell-style pattern matching and globbing for ReadablePath.
+    """
+
+    @staticmethod
+    def lexists(path):
+        return path.info.exists(follow_symlinks=False)
+
+    @staticmethod
+    def scandir(path):
+        return ((child.info, child.name, child) for child in path.iterdir())
+
+    @staticmethod
+    def concat_path(path, text):
+        return path.with_segments(vfspath(path) + text)
+
+    stringify_path = staticmethod(vfspath)
+
+
 class JoinablePath(ABC):
     """Abstract base class for pure path objects.
 
@@ -92,20 +113,19 @@ class JoinablePath(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def __str__(self):
-        """Return the string representation of the path, suitable for
-        passing to system calls."""
+    def __vfspath__(self):
+        """Return the string representation of the path."""
         raise NotImplementedError
 
     @property
     def anchor(self):
         """The concatenation of the drive and root, or ''."""
-        return _explode_path(str(self), self.parser.split)[0]
+        return _explode_path(vfspath(self), self.parser.split)[0]
 
     @property
     def name(self):
         """The final path component, if any."""
-        return self.parser.split(str(self))[1]
+        return self.parser.split(vfspath(self))[1]
 
     @property
     def suffix(self):
@@ -141,7 +161,7 @@ class JoinablePath(ABC):
         split = self.parser.split
         if split(name)[0]:
             raise ValueError(f"Invalid name {name!r}")
-        path = str(self)
+        path = vfspath(self)
         path = path.removesuffix(split(path)[1]) + name
         return self.with_segments(path)
 
@@ -174,7 +194,7 @@ class JoinablePath(ABC):
     def parts(self):
         """An object providing sequence-like access to the
         components in the filesystem path."""
-        anchor, parts = _explode_path(str(self), self.parser.split)
+        anchor, parts = _explode_path(vfspath(self), self.parser.split)
         if anchor:
             parts.append(anchor)
         return tuple(reversed(parts))
@@ -185,24 +205,24 @@ class JoinablePath(ABC):
         paths) or a totally different path (if one of the arguments is
         anchored).
         """
-        return self.with_segments(str(self), *pathsegments)
+        return self.with_segments(vfspath(self), *pathsegments)
 
     def __truediv__(self, key):
         try:
-            return self.with_segments(str(self), key)
+            return self.with_segments(vfspath(self), key)
         except TypeError:
             return NotImplemented
 
     def __rtruediv__(self, key):
         try:
-            return self.with_segments(key, str(self))
+            return self.with_segments(key, vfspath(self))
         except TypeError:
             return NotImplemented
 
     @property
     def parent(self):
         """The logical parent of the path."""
-        path = str(self)
+        path = vfspath(self)
         parent = self.parser.split(path)[0]
         if path != parent:
             return self.with_segments(parent)
@@ -212,7 +232,7 @@ class JoinablePath(ABC):
     def parents(self):
         """A sequence of this path's logical parents."""
         split = self.parser.split
-        path = str(self)
+        path = vfspath(self)
         parent = split(path)[0]
         parents = []
         while path != parent:
@@ -229,7 +249,7 @@ class JoinablePath(ABC):
         case_sensitive = self.parser.normcase('Aa') == 'Aa'
         globber = _PathGlobber(self.parser.sep, case_sensitive, recursive=True)
         match = globber.compile(pattern, altsep=self.parser.altsep)
-        return match(str(self)) is not None
+        return match(vfspath(self)) is not None
 
 
 class ReadablePath(JoinablePath):
@@ -251,10 +271,10 @@ class ReadablePath(JoinablePath):
         raise NotImplementedError
 
     @abstractmethod
-    def __open_rb__(self, buffering=-1):
+    def __open_reader__(self):
         """
         Open the file pointed to by this path for reading in binary mode and
-        return a file object, like open(mode='rb').
+        return a file object.
         """
         raise NotImplementedError
 
@@ -262,7 +282,7 @@ class ReadablePath(JoinablePath):
         """
         Open the file in bytes mode, read it, and close the file.
         """
-        with magic_open(self, mode='rb', buffering=0) as f:
+        with vfsopen(self, mode='rb') as f:
             return f.read()
 
     def read_text(self, encoding=None, errors=None, newline=None):
@@ -272,7 +292,7 @@ class ReadablePath(JoinablePath):
         # Call io.text_encoding() here to ensure any warning is raised at an
         # appropriate stack level.
         encoding = text_encoding(encoding)
-        with magic_open(self, mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+        with vfsopen(self, mode='r', encoding=encoding, errors=errors, newline=newline) as f:
             return f.read()
 
     @abstractmethod
@@ -381,10 +401,10 @@ class WritablePath(JoinablePath):
         raise NotImplementedError
 
     @abstractmethod
-    def __open_wb__(self, buffering=-1):
+    def __open_writer__(self, mode):
         """
         Open the file pointed to by this path for writing in binary mode and
-        return a file object, like open(mode='wb').
+        return a file object.
         """
         raise NotImplementedError
 
@@ -394,7 +414,7 @@ class WritablePath(JoinablePath):
         """
         # type-check for the buffer interface before truncating the file
         view = memoryview(data)
-        with magic_open(self, mode='wb') as f:
+        with vfsopen(self, mode='wb') as f:
             return f.write(view)
 
     def write_text(self, data, encoding=None, errors=None, newline=None):
@@ -407,7 +427,7 @@ class WritablePath(JoinablePath):
         if not isinstance(data, str):
             raise TypeError('data must be str, not %s' %
                             data.__class__.__name__)
-        with magic_open(self, mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+        with vfsopen(self, mode='w', encoding=encoding, errors=errors, newline=newline) as f:
             return f.write(data)
 
     def _copy_from(self, source, follow_symlinks=True):
@@ -418,7 +438,7 @@ class WritablePath(JoinablePath):
         while stack:
             src, dst = stack.pop()
             if not follow_symlinks and src.info.is_symlink():
-                dst.symlink_to(str(src.readlink()), src.info.is_dir())
+                dst.symlink_to(vfspath(src.readlink()), src.info.is_dir())
             elif src.info.is_dir():
                 children = src.iterdir()
                 dst.mkdir()
@@ -426,8 +446,8 @@ class WritablePath(JoinablePath):
                     stack.append((child, dst.joinpath(child.name)))
             else:
                 ensure_different_files(src, dst)
-                with magic_open(src, 'rb') as source_f:
-                    with magic_open(dst, 'wb') as target_f:
+                with vfsopen(src, 'rb') as source_f:
+                    with vfsopen(dst, 'wb') as target_f:
                         copyfileobj(source_f, target_f)
 
 
