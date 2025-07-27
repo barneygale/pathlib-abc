@@ -4,6 +4,11 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet
+
+v0.5.0
+------
+
 - Add ``vfspath()``, which returns the virtual filesystem path as a string.
 - Replace ``JoinablePath.__str__()`` abstract method with ``__vfspath__()``.
 - Replace ``magic_open()`` with ``vfsopen()``. The new function takes the same
