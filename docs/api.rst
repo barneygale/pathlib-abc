@@ -10,14 +10,20 @@ Functions
 
 This package offers the following functions:
 
-.. function:: magic_open(path, mode='r' buffering=-1, \
-                         encoding=None, errors=None, newline=None)
+.. function:: vfspath(obj)
 
-    Open the path and return a file object. Unlike the built-in ``open()``
-    function, this function tries to call :meth:`!__open_r__`,
-    :meth:`~ReadablePath.__open_rb__`, :meth:`!__open_w__`, and
-    :meth:`~WritablePath.__open_wb__` methods on the given path object as
-    appropriate for the given mode.
+    Return the virtual filesystem path (a string) of the given object. Unlike
+    the ``os.fspath()`` function, this function calls the object's
+    :meth:`~JoinablePath.__vfspath__` method.
+
+.. function:: vfsopen(obj, mode='r' buffering=-1, \
+                      encoding=None, errors=None, newline=None)
+
+    Open the given object and return a file object. Unlike the built-in
+    ``open()`` function, this function calls the object's
+    :meth:`~ReadablePath.__open_reader__`,
+    :meth:`~WritablePath.__open_writer__` or :meth:`!__open_updater__` method,
+    as appropriate for the given mode.
 
 
 Protocols
@@ -136,7 +142,7 @@ This package offers the following abstract base classes:
      *
      * :attr:`~JoinablePath.parser`
 
-       :meth:`~JoinablePath.__str__`
+       :meth:`~JoinablePath.__vfspath__`
 
        :meth:`~JoinablePath.with_segments`
      * :attr:`~JoinablePath.parts`
@@ -164,7 +170,7 @@ This package offers the following abstract base classes:
      * :class:`JoinablePath`
      * :attr:`~ReadablePath.info`
 
-       :meth:`~ReadablePath.__open_rb__`
+       :meth:`~ReadablePath.__open_reader__`
 
        :meth:`~ReadablePath.iterdir`
 
@@ -181,7 +187,7 @@ This package offers the following abstract base classes:
 
    - * :class:`WritablePath`
      * :class:`JoinablePath`
-     * :meth:`~WritablePath.__open_wb__`
+     * :meth:`~WritablePath.__open_writer__`
 
        :meth:`~WritablePath.mkdir`
 
@@ -201,7 +207,7 @@ This package offers the following abstract base classes:
       (**Abstract attribute**.) Implementation of :class:`PathParser` used for
       low-level splitting and joining.
 
-   .. method:: __str__()
+   .. method:: __vfspath__()
 
       (**Abstract method**.) Return a string representation of the path,
       suitable for passing to methods of the :attr:`parser`.
@@ -302,7 +308,7 @@ This package offers the following abstract base classes:
       (**Abstract attribute**.) Implementation of :class:`PathInfo` that
       supports querying the file type.
 
-   .. method:: __open_rb__(buffering=-1)
+   .. method:: __open_reader__()
 
       (**Abstract method.**) Open the path for reading in binary mode, and
       return a file object.
@@ -318,12 +324,12 @@ This package offers the following abstract base classes:
    .. method:: read_bytes()
 
       Return the binary contents of the path. The default implementation
-      calls :meth:`__open_rb__`.
+      calls :func:`vfsopen`.
 
    .. method:: read_text(encoding=None, errors=None, newline=None)
 
-      Return the text contents of the path. The default implementation calls
-      :meth:`!__open_r__` if it exists, falling back to :meth:`__open_rb__`.
+      Return the text contents of the path. The default implementation
+      calls :func:`vfsopen`.
 
    .. method:: copy(target, **kwargs)
 
@@ -364,10 +370,11 @@ This package offers the following abstract base classes:
    Abstract base class for path objects with support for writing data. This
    is a subclass of :class:`JoinablePath`
 
-   .. method:: __open_wb__(buffering=-1)
+   .. method:: __open_writer__(mode)
 
       (**Abstract method**.) Open the path for writing in binary mode, and
-      return a file object.
+      return a file object. The *mode* argument is either ``'w'``, ``'a'``,
+      or ``'x'``.
 
    .. method:: mkdir()
 
@@ -381,20 +388,19 @@ This package offers the following abstract base classes:
    .. method:: write_bytes(data)
 
       Write the given binary data to the path, and return the number of bytes
-      written. The default implementation calls :meth:`__open_wb__`.
+      written. The default implementation calls :func:`vfsopen`.
 
    .. method:: write_text(data, encoding=None, errors=None, newline=None)
 
       Write the given text data to the path, and return the number of bytes
-      written. The default implementation calls :meth:`!__open_w__` if it
-      exists, falling back to :meth:`__open_wb__`.
+      written. The default implementation calls :func:`vfsopen`.
 
    .. method:: _copy_from(source, *, follow_symlinks=True)
 
       Copy the path from the given source, which should be an instance of
       :class:`ReadablePath`. The default implementation uses
       :attr:`ReadablePath.info` to establish the type of the source path. It
-      uses :meth:`~ReadablePath.__open_rb__` and :meth:`__open_wb__` to copy
-      regular files; :meth:`~ReadablePath.iterdir` and :meth:`mkdir` to copy
-      directories; and :meth:`~ReadablePath.readlink` and :meth:`symlink_to`
-      to copy symlinks when *follow_symlinks* is false.
+      uses :func:`vfsopen` to copy regular files;
+      :meth:`~ReadablePath.iterdir` and :meth:`mkdir` to copy directories; and
+      :meth:`~ReadablePath.readlink` and :meth:`symlink_to` to copy symlinks
+      when *follow_symlinks* is false.
