@@ -23,7 +23,7 @@ except ImportError:
         return encoding
 
 
-__all__ = ['PathParser', 'PathInfo', 'JoinablePath', 'ReadablePath', 'WritablePath', 'magic_open']
+__all__ = ['PathParser', 'PathInfo', 'JoinablePath', 'ReadablePath', 'WritablePath', 'vfsopen', 'vfspath']
 
 
 def _explode_path(path, split):
