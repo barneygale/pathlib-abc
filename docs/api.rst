@@ -20,7 +20,7 @@ This package offers the following functions:
                       encoding=None, errors=None, newline=None)
 
     Open the given object and return a file object. Unlike the built-in
-    ``open()`` function, this function calls the object's
+    ``open()`` function, this function additionally calls the object's
     :meth:`~ReadablePath.__open_reader__`,
     :meth:`~WritablePath.__open_writer__` or :meth:`!__open_updater__` method,
     as appropriate for the given mode.
