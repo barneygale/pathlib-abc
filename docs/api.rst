@@ -164,6 +164,9 @@ This package offers the following abstract base classes:
        :meth:`~JoinablePath.__truediv__`
        :meth:`~JoinablePath.__rtruediv__`
 
+       :meth:`~JoinablePath.relative_to`
+       :meth:`~JoinablePath.is_relative_to`
+
        :meth:`~JoinablePath.full_match`
 
    - * :class:`ReadablePath`
@@ -290,6 +293,18 @@ This package offers the following abstract base classes:
    .. method:: __rtruediv__(pathsegment)
 
       Return a new path with the given path segment joined on the beginning.
+
+   .. method:: relative_to(other, *, walk_up=False)
+
+      Return a new relative path from *other* to this path. The default
+      implementation compares this path and the parents of *other*;
+      ``__eq__()`` must be implemented for this to work correctly.
+
+   .. method:: is_relative_to(other)
+
+      Returns ``True`` is this path is relative to *other*, ``False``
+      otherwise. The default implementation compares this path and the parents
+      of *other*; ``__eq__()`` must be implemented for this to work correctly.
 
    .. method:: full_match(pattern)
 

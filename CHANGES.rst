@@ -4,7 +4,7 @@ Version History
 Unreleased
 ----------
 
-- Nothing yet
+- Add ``JoinablePath.relative_to()`` and ``JoinablePath.is_relative_to()``.
 
 v0.5.1
 ------
