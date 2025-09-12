@@ -4,6 +4,11 @@ Version History
 Unreleased
 ----------
 
+- Nothing yet
+
+v0.5.1
+------
+
 - Make ``vfsopen()`` try to call ``open()``, like it did before 0.5.0.
 
 v0.5.0
