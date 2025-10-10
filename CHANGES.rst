@@ -1,5 +1,5 @@
-Version History
-===============
+Changelog
+=========
 
 Unreleased
 ----------

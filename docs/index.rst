@@ -4,7 +4,6 @@ Contents
 --------
 
 .. toctree::
-    examples
     api
+    examples
     changes
-    license
