@@ -145,7 +145,11 @@ This package offers the following abstract base classes:
        :meth:`~JoinablePath.__vfspath__`
 
        :meth:`~JoinablePath.with_segments`
-     * :attr:`~JoinablePath.parts`
+     * :meth:`~JoinablePath.joinpath`
+       :meth:`~JoinablePath.__truediv__`
+       :meth:`~JoinablePath.__rtruediv__`
+
+       :attr:`~JoinablePath.parts`
        :attr:`~JoinablePath.anchor`
 
        :attr:`~JoinablePath.parent`
@@ -159,10 +163,6 @@ This package offers the following abstract base classes:
        :meth:`~JoinablePath.with_name`
        :meth:`~JoinablePath.with_stem`
        :meth:`~JoinablePath.with_suffix`
-
-       :meth:`~JoinablePath.joinpath`
-       :meth:`~JoinablePath.__truediv__`
-       :meth:`~JoinablePath.__rtruediv__`
 
        :meth:`~JoinablePath.relative_to`
        :meth:`~JoinablePath.is_relative_to`
@@ -222,6 +222,20 @@ This package offers the following abstract base classes:
       derivative path is created, such as from :attr:`parent` and
       :meth:`with_name`.
 
+   .. method:: joinpath(*pathsegments)
+
+      Return a new path with the given path segments joined onto the end. The
+      default implementation calls :meth:`with_segments` with the combined
+      segments.
+
+   .. method:: __truediv__(pathsegment)
+
+      Return a new path with the given path segment joined on the end.
+
+   .. method:: __rtruediv__(pathsegment)
+
+      Return a new path with the given path segment joined on the beginning.
+
    .. attribute:: parts
 
       Tuple of path components. The default implementation repeatedly calls
@@ -279,20 +293,6 @@ This package offers the following abstract base classes:
 
       Return a new path with a different :attr:`suffix`, similarly to
       :meth:`with_name`.
-
-   .. method:: joinpath(*pathsegments)
-
-      Return a new path with the given path segments joined onto the end. The
-      default implementation calls :meth:`with_segments` with the combined
-      segments.
-
-   .. method:: __truediv__(pathsegment)
-
-      Return a new path with the given path segment joined on the end.
-
-   .. method:: __rtruediv__(pathsegment)
-
-      Return a new path with the given path segment joined on the beginning.
 
    .. method:: relative_to(other, *, walk_up=False)
 
