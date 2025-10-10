@@ -4,6 +4,11 @@ Changelog
 Unreleased
 ----------
 
+- Nothing yet
+
+v0.5.2
+------
+
 - Add ``JoinablePath.relative_to()`` and ``JoinablePath.is_relative_to()``.
 
 v0.5.1
